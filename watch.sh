@@ -53,7 +53,7 @@ watch src spec \
       ! [[ -z "$AUTO_COMMIT" ]] && git add . && git commit -m "[GREEN] Change $(next_change)$(commit_message)" && committed="(committed)"
       notify --expire-time=1000 "SUCCESS $committed"
     else
-      failure=$(cat .watch.out | grep 'Failure\|expected:\|got:\|Error in')
+      failure=$(cat .watch.out | grep 'Failure\|Expected:\|Actual:\|Error in')
       cat .watch.out
       ! [[ -z "$AUTO_COMMIT" ]] && git add . && git commit -m "[RED] Change $(next_change)$(commit_message)" && committed="(committed)"
       notify --expire-time=3000 "FAILURE:$failure $committed"
