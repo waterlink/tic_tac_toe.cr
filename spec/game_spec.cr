@@ -1,13 +1,6 @@
 require "./spec_helper"
 require "../src/game"
 
-macro game_over(g1, g2, g3, over)
-  {% game = [g1, g2, g3] %}
-
-  expect(Game.from({{game.argify}}).over?)
-    .to eq({{over}})
-end
-
 macro game(g1, g2, g3, *expectations)
   {% game = [g1, g2, g3] %}
   game = Game.from({{game.argify}})
@@ -64,138 +57,156 @@ module TicTacToe
     end
 
     it "is over when all fields are taken" do
-      game_over(
+      game(
         xxo,
         oox,
         xox,
-        true
+
+        expect(game.over?).to eq(true),
       )
     end
 
     it "is not over when there are some fields left" do
-      game_over(
+      game(
         xxo,
         oox,
         xo_,
-        false,
+
+        expect(game.over?).to eq(false),
       )
     end
 
     it "is over when all fields in a column are taken by a player" do
-      game_over(
+      game(
         x_o,
         xo_,
         x__,
-        true,
+
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         _xo,
         ox_,
         _x_,
-        true,
+
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         _ox,
         o_x,
         __x,
-        true,
+
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         o_x,
         ox_,
         o__,
-        true,
+
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         _ox,
         xo_,
         _o_,
-        true,
+
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         _xo,
         x_o,
         __o,
-        true,
+
+        expect(game.over?).to eq(true),
       )
     end
 
     it "is over when all fields in a row are taken by a player" do
-      game_over(
+      game(
         xxx,
         o_o,
         ___,
-        true,
+
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         o_o,
         xxx,
         ___,
-        true,
+
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         o_o,
         ___,
         xxx,
-        true,
+
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         ooo,
         x_x,
         ___,
-        true,
+
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         x_x,
         ooo,
         ___,
-        true,
+
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         x_x,
         ___,
         ooo,
-        true,
+
+        expect(game.over?).to eq(true),
       )
     end
 
     it "is over when all fields in a diagonal are taken by a player" do
-      game_over(
+      game(
         x_o,
         _xo,
         __x,
-        true,
+        
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         o_x,
         ox_,
         x__,
-        true,
+        
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         o_x,
         _ox,
         __o,
-        true,
+        
+        expect(game.over?).to eq(true),
       )
 
-      game_over(
+      game(
         x_o,
         xo_,
         o__,
-        true,
+        
+        expect(game.over?).to eq(true),
       )
     end
 

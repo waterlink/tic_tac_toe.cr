@@ -4,13 +4,12 @@ module TicTacToe
 
     N = 3
 
-    VERTICAL = 1
-    HORIZONTAL = 0
-    ALIGNS = [VERTICAL, HORIZONTAL]
-
-    MAIN = -> (f : Field) { f[0] == f[1] }
-    BACK = -> (f : Field) { f[0] + f[1] == N - 1 }
-    DIAGONALS = [MAIN, BACK]
+    WIN_CHECKS = [
+      Column(Column::HORIZONTAL),
+      Column(Column::VERTICAL),
+      Diagonal(Diagonal::Main),
+      Diagonal(Diagonal::Back),
+    ]
 
     OUTCOMES = {
       first_won: "First player won",
@@ -21,19 +20,7 @@ module TicTacToe
     protected getter fields, first, second
     def initialize(game : Array(String))
       initialize
-
-      default = empty
-      dispatch = {
-        '_' => fields,
-        'x' => first,
-        'o' => second,
-      }
-
-      game.each_with_index do |line, i|
-        line.each_char.each_with_index do |char, j|
-          dispatch.fetch(char, default) << {i, j}
-        end
-      end
+      init_from_table!(game)
     end
 
     def initialize(@fields = empty : Array(Field), first = empty, second = empty, @notice = "")
@@ -79,44 +66,44 @@ module TicTacToe
         self.second == other.second
     end
 
-    private def full_column?(column)
-      (0...N).reduce(false) do |result, i|
-        result || column.first
-          .select(&.[column.last].== i)
-          .size == N
-      end
-    end
-
-    private def diagonal?(diag)
-      diag.first
-        .select(&diag.last)
-        .size == N
-    end
-
     private def _notice
       return over_notice if over?
       @notice
     end
 
     private def won?(taken)
-      won_by_column?(taken) ||
-        won_by_diagonal?(taken)
-    end
-
-    private def won_by_column?(taken)
-      ALIGNS
-        .map { |align| full_column?({taken, align}) }
-        .any?
-    end
-
-    private def won_by_diagonal?(taken)
-      DIAGONALS
-        .map { |kind| diagonal?({taken, kind}) }
+      WIN_CHECKS
+        .map(&.full?(taken))
         .any?
     end
 
     private def over_notice
       "Game over. #{OUTCOMES[outcome]}."
+    end
+
+    private def stack_by_hash
+      @_stack_by ||= {
+        '_' => fields,
+        'x' => first,
+        'o' => second,
+      }
+    end
+
+    private def stack_by_default
+      @_stack_by_default ||= empty
+    end
+
+    private def stack_by(char)
+      stack_by_hash
+        .fetch(char, stack_by_default)
+    end
+
+    private def init_from_table!(game)
+      game.each_with_index do |line, i|
+        line.each_char.each_with_index do |char, j|
+          stack_by(char) << {i, j}
+        end
+      end
     end
 
     private def empty
@@ -186,6 +173,53 @@ module TicTacToe
 
       private def first_takes?
         first.size == second.size
+      end
+    end
+
+    class WinCheck
+      private getter taken
+      def initialize(@taken)
+      end
+
+      def self.full?(taken)
+        new(taken).full?
+      end
+
+      def full?
+        false
+      end
+    end
+
+    class Column(A) < WinCheck
+      VERTICAL = 1
+      HORIZONTAL = 0
+
+      def full?
+        (0...N).reduce(false) do |result, i|
+          result || taken
+            .select(&.[A].== i)
+            .size == N
+        end
+      end
+    end
+
+    class Diagonal(K) < WinCheck
+      def full?
+        taken
+          .select { |f| K.call(f) }
+          .size == N
+      end
+
+      class Main
+        def self.call(f)
+          f[0] == f[1]
+        end
+      end
+
+      class Back
+        def self.call(f)
+          f[0] + f[1] == N - 1
+        end
       end
     end
   end
